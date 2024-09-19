@@ -53,12 +53,13 @@ export default async function Page() {
     for (let i = 6; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
-        const dayName = date.toLocaleString('en-IN', { weekday: 'long' })
+        const dayName = date.toLocaleString('en-IN', { weekday: 'long', timeZone: 'Asia/Kolkata' });
         let fuel = 0;
         let repair = 0;
         let servicing = 0;
         prevSpendings.map(data => {
-            const dayOfWeek = new Date(data.date).toLocaleDateString('en-IN', { weekday: 'long' });
+            const dayOfWeek = new Date(data.date).toLocaleDateString('en-IN', { weekday: 'long', timeZone: 'Asia/Kolkata' });
+
             if (dayOfWeek === dayName) {
                 if (data.type === 'Fuel') {
                     fuel += data.spending;
@@ -108,7 +109,7 @@ export default async function Page() {
                 </div>
                 <div className="w-full flex flex-col gap-y-2 mb-5">
                     {
-                        prevSpendings.map(prevData => {
+                        prevSpendings.reverse().map(prevData => {
                             return (
                                 <div key={prevData.id} className="flex items-center justify-between px-3 py-2">
                                     <div className="flex flex-col">
