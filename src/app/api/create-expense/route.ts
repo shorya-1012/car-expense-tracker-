@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { addExpenseValidator } from "@/lib/validators";
 import { auth } from "@clerk/nextjs/server";
+import { create } from "domain";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -12,16 +13,34 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     try {
-        const { type, spending, date } = addExpenseValidator.parse(body);
+        const { type, spending, date, hasContirbutor, contirbutionAmount, contributor } = addExpenseValidator.parse(body);
 
-        const _ = await db.expense.create({
-            data: {
-                type: type,
-                spending: spending,
-                date: date,
-                userId: userId
-            }
-        })
+        if (!hasContirbutor) {
+            const _ = await db.expense.create({
+                data: {
+                    type: type,
+                    spending: spending,
+                    date: date,
+                    userId: userId
+                }
+            })
+        } else {
+            await db.expense.create({
+                data: {
+                    type: type,
+                    spending: spending,
+                    date: date,
+                    userId: userId,
+                    contributionId: {
+                        create: {
+                            contributor: contributor!,
+                            amount: contirbutionAmount
+                        }
+                    }
+                }
+            })
+        }
+
 
         return NextResponse.json({ ok: true }, { status: 200 });
     } catch (error) {

@@ -39,7 +39,7 @@ export default function WeeklyChart({ graphData }: Props) {
 
     return (
         <div className="w-screen p-5 my-5 flex flex-col">
-            <ChartContainer config={chartConfig} className="rounded-xl bg-zinc-900 p-3">
+            <ChartContainer config={chartConfig} className="rounded-xl bg-zinc-900 p-3 h-[250px]">
                 <BarChart accessibilityLayer data={graphData}>
                     <CartesianGrid vertical={false} />
                     <XAxis

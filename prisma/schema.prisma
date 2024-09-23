@@ -14,11 +14,20 @@ datasource db {
 }
 
 model Expense {
-    id       String      @id @default(cuid())
-    type     ExpenseType
-    date     DateTime
-    spending Int         @default(0)
-    userId   String
+    id               String        @id @default(cuid())
+    type             ExpenseType
+    date             DateTime
+    spending         Int           @default(0)
+    userId           String
+    contributionId   Contribution? @relation(fields: [contributionC_id], references: [c_id])
+    contributionC_id String?
+}
+
+model Contribution {
+    c_id        String    @id @default(cuid())
+    contributor String
+    amount      Int       @default(0)
+    Expense     Expense[]
 }
 
 enum ExpenseType {

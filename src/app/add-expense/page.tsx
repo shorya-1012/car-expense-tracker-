@@ -1,7 +1,7 @@
 'use client'
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-dropdown-menu";
-import { ChevronLeft, CalendarDays } from "lucide-react"
+import { ChevronLeft, CalendarDays, UserPlus } from "lucide-react"
 import Link from "next/link"
 import {
     Select,
@@ -26,6 +26,7 @@ import { AddExpensePayload } from "@/lib/validators";
 import { ExpenseType } from "@prisma/client";
 import { formatDate } from "date-fns";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 
 const expenseTypes = [
@@ -52,6 +53,9 @@ export default function Page() {
     const [date, setDate] = useState<Date | undefined>();
     const [spending, setSpending] = useState<number | string>('');
     const [type, setType] = useState('');
+    const [contributor, setContributor] = useState('');
+    const [contributonAmount, setContibutionAmount] = useState<number | string>('');
+    const [showDropdown, setShowDropdown] = useState(false);
     const router = useRouter();
 
     const handleSubmit = async (e: any) => {
@@ -73,7 +77,10 @@ export default function Page() {
             const payload: AddExpensePayload = {
                 date: date,
                 spending: Number(spending),
-                type: type as ExpenseType
+                type: type as ExpenseType,
+                hasContirbutor: showDropdown,
+                contributor: contributor,
+                contirbutionAmount: Number(contributonAmount)
             };
 
             await axios.post("/api/create-expense", payload);
@@ -156,8 +163,54 @@ export default function Page() {
                         </PopoverContent>
                     </Popover>
                 </section>
+                <section className="w-full flex flex-col items-start gap-y-3 mb-5 px-2">
+                    <Button
+                        variant={'outline'}
+                        className={cn("w-full items-center gap-x-3", showDropdown ? "hidden" : "flex")}
+                        type="button"
+                        onClick={() => setShowDropdown(true)}
+                    >
+                        Add Contirbutor
+                        <UserPlus size={15} />
+                    </Button>
+                    <div className={cn(showDropdown ? 'flex' : 'hidden', "flex-col items-start w-full")}>
+                        <section className="w-full flex flex-col items-start gap-y-3 mb-5 px-2">
+                            <Label>Contirbutor</Label>
+                            <Input
+                                className="w-full"
+                                placeholder="Contributor name"
+                                value={contributor}
+                                onChange={(e) => setContributor(e.target.value)}
+                            />
+                        </section>
+                        <section className="w-full flex flex-col items-start gap-y-3 my-5 px-2">
+                            <Label>Amount</Label>
+                            <Input
+                                className="w-full"
+                                placeholder="Amount contributed"
+                                value={contributonAmount}
+                                onChange={(e) => setContibutionAmount(e.target.value)}
+                                type="number"
+                            />
+                        </section>
+                        <Button
+                            type="button"
+                            variant={'outline'}
+                            className="place-self-end mr-2"
+                            onClick={() => {
+                                setContributor('');
+                                setContibutionAmount('')
+                                setShowDropdown(false)
+                            }
+                            }
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </section>
                 <section className="w-full flex flex-col items-start gap-y-3 my-5 px-2">
                     <Button
+                        type="submit"
                         onClick={e => handleSubmit(e)}
                         variant={'secondary'} className="w-full">Sumbit</Button>
                 </section>

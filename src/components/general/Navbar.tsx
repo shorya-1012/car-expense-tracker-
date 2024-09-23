@@ -1,4 +1,4 @@
-import {
+import{
     Avatar,
     AvatarFallback,
     AvatarImage,
@@ -37,7 +37,7 @@ export default async function Navbar() {
                 <DropdownMenuTrigger>
                     <AlignJustify />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="mr-3">
                     <DropdownMenuItem className="h-[40px]">
                         <div className="w-full h-full flex justify-between items-center">
                             Spendings

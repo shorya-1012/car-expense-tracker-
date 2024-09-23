@@ -1,28 +1,11 @@
 import Navbar from "@/components/general/Navbar";
+import ThisMonthPieChart from "@/components/home/ThisMonthPieChart";
 import WeeklyChart from "@/components/home/weeklyChart";
 import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
-import { subDays } from "date-fns";
+import { constructNow, subDays } from "date-fns";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { GiAutoRepair } from "react-icons/gi";
-import { BsFillFuelPumpFill } from "react-icons/bs";
-import { FaCar } from "react-icons/fa";
-
-const iconsMap = [
-    {
-        name: "Fuel",
-        icon: <BsFillFuelPumpFill />
-    },
-    {
-        name: "Repair",
-        icon: <GiAutoRepair />
-    },
-    {
-        name: "Servicing", icon: <FaCar />
-    },
-];
-
 
 export default async function Page() {
     const { userId } = auth();
@@ -35,18 +18,15 @@ export default async function Page() {
             date: 'asc'
         },
         where: {
-            AND: [
-                {
-                    date: {
-                        gte: oneWeekAgo,
-                    }
-                },
-                {
-                    userId: userId,
-                }
-            ],
-
-        }
+            date: {
+                gte: oneWeekAgo
+            },
+            userId: userId
+        },
+        include: {
+            contributionId: true
+        },
+        take: 5
     })
 
     const graphData = [];
@@ -81,26 +61,36 @@ export default async function Page() {
     const now = new Date();
     const firstDayofMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const currentMonthExpenditure = await db.expense.aggregate({
-        _sum: {
-            spending: true
+    const monthlyExpenditure = await db.expense.findMany({
+        select: {
+            spending: true,
+            contributionId: {
+                select: {
+                    amount: true
+                }
+            }
         },
         where: {
             date: {
                 gte: firstDayofMonth,
                 lt: new Date(now.getFullYear(), now.getMonth() + 1, 1)
             },
-            userId: userId
-        }
-    });
+            userId: userId,
+        },
+    })
+
+    let totalMonthlySpending = 0;
+    let totalcontirbution = 0;
+    for (let data of monthlyExpenditure) {
+        totalMonthlySpending += data.spending;
+        totalcontirbution += data.contributionId?.amount || 0;
+    }
+    const mySpending = totalMonthlySpending - totalcontirbution;
 
     return (
         <div className="flex flex-col justify-start">
             <Navbar />
-            <div data-aos="fade-up" className="flex flex-col gap-y-2 items-center justify-center mt-5">
-                <span className="text-gray-400">This Month</span>
-                <p className="text-4xl font-semibold tracking-widest">₹{currentMonthExpenditure._sum.spending}</p>
-            </div>
+            <ThisMonthPieChart totalExpenditure={totalMonthlySpending} totalContribution={totalcontirbution} mySpending={mySpending} />
             <WeeklyChart graphData={graphData} />
             <div data-aos="fade-up" className="w-screen flex flex-col px-3">
                 <div className="w-full rounded-lg my-3 bg-zinc-900 flex justify-between items-center px-5 py-3">
@@ -121,7 +111,12 @@ export default async function Page() {
                                             day: 'numeric'
                                         })}</p>
                                     </div>
-                                    <FaCar />
+                                    <div className="flex flex-col gap-y-1 items-end">
+                                        <p className="font-semibold tracking-wider text-green-400">₹{prevData.spending}</p>
+                                        {prevData.contributionId?.amount &&
+                                            <p className="font-semibold tracking-wider text-red-500 text-sm">- ₹{prevData.contributionId.amount}</p>
+                                        }
+                                    </div>
                                 </div>
                             )
                         })

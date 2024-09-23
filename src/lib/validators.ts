@@ -7,12 +7,14 @@ export const addExpenseValidator = z.object({
     spending: z.number(),
     date: z.preprocess((arg) => {
         if (typeof arg === 'string') {
-            // Convert the date to UTC to avoid timezone shifts
             const date = new Date(arg);
-            return new Date(date.toISOString()); // Convert to UTC and ensure it's consistent
+            return new Date(date.toISOString());
         }
         return arg;
-    }, z.date())
+    }, z.date()),
+    hasContirbutor: z.boolean(),
+    contributor: z.string().optional(),
+    contirbutionAmount: z.number().optional(),
 })
 
 export type AddExpensePayload = z.infer<typeof addExpenseValidator>
